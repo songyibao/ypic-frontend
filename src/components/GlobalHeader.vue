@@ -22,12 +22,12 @@
         <div class="login-status">
           <div v-if="loginUserStore.isLogin">
             <a-dropdown placement="bottomRight">
-              <div>
+              <div style="display: flex; align-items: center">
                 <a-avatar :src="loginUserStore.loginUser.userAvatar" />
                 {{ loginUserStore.loginUser?.userName }}
               </div>
               <template #overlay>
-                <a-menu slot="overlay">
+                <a-menu>
                   <!--                  <a-menu-item key="/setting">-->
                   <!--                    <setting-outlined />-->
                   <!--                    设置-->
@@ -53,7 +53,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { h, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { LogoutOutlined } from '@ant-design/icons-vue'
 import { MenuProps } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
@@ -69,7 +69,7 @@ const doMenuClick = ({ key }) => {
 }
 const loginUserStore = useLoginUserStore()
 
-const items = ref<MenuProps['items']>([
+const originItems = [
   {
     key: '/home',
     label: '主页',
@@ -85,7 +85,19 @@ const items = ref<MenuProps['items']>([
     label: h('a', { href: 'https://baidu.com', target: '_blank' }, '百度'),
     title: '百度',
   },
-])
+] as MenuProps['items']
+const filterMenus = (items: MenuProps['items']) => {
+  return items.filter((item) => {
+    if (item?.key?.startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
+const items = computed(() => filterMenus(originItems))
 </script>
 <style scoped>
 #globalHeader {
